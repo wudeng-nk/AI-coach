@@ -1,0 +1,59 @@
+# ==============================================================================
+# AI Coach - 生产环境 Docker Compose 配置
+#
+# 使用方法:
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# 部署前请修改以下配置:
+#   - 122.51.165.194     → 你的服务器公网 IP
+#   - <DB_PASSWORD>   → 数据库密码（已预生成）
+#   - <JWT_SECRET>    → JWT 签名密钥（已预生成）
+# ==============================================================================
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ai_coach
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 0GprlegoKWZpgHMMQ-yva6hMiyVsx0Vr
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    # 不暴露端口 - 数据库只在 Docker 内部网络可访问
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:0GprlegoKWZpgHMMQ-yva6hMiyVsx0Vr@db:5432/ai_coach
+      - AI_SERVICE_MODE=mock
+      - JWT_SECRET_KEY=pRHWiyr7ahha6Jl-sd7VfXPle5BIaRxzSFhO3WFVWlUKj34fmsuGPfZdYE-8_Ut_
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - REFRESH_TOKEN_EXPIRE_DAYS=7
+      - CORS_ORIGINS=["http://122.51.165.194","http://localhost"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    # 不暴露 8000 端口 - 只通过 nginx 反代访问
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  pgdata:
