@@ -7,11 +7,14 @@ import 'package:ai_coach/features/auth/presentation/pages/login_page.dart';
 import 'package:ai_coach/features/auth/presentation/pages/register_page.dart';
 import 'package:ai_coach/features/home/presentation/pages/home_page.dart';
 import 'package:ai_coach/features/training/presentation/pages/training_hall_page.dart';
+import 'package:ai_coach/features/training/presentation/pages/parent_selection_page.dart';
 import 'package:ai_coach/features/training/presentation/pages/training_chat_page.dart';
 import 'package:ai_coach/features/training/presentation/pages/training_report_page.dart';
-import 'package:ai_coach/features/knowledge/presentation/pages/knowledge_chat_page.dart';
+import 'package:ai_coach/features/data/presentation/pages/data_page.dart';
 import 'package:ai_coach/features/profile/presentation/pages/profile_page.dart';
 import 'package:ai_coach/core/theme/app_colors.dart';
+import 'package:ai_coach/shared/widgets/gamepad_tab_icon.dart';
+import 'package:ai_coach/shared/widgets/chart_tab_icon.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -42,10 +45,21 @@ final router = GoRouter(
       builder: (_, state, child) => MainShell(child: child),
       routes: [
         GoRoute(path: '/', builder: (_, __) => const HomePage()),
-        GoRoute(path: '/training', builder: (_, __) => const TrainingHallPage()),
-        GoRoute(path: '/knowledge', builder: (_, __) => const KnowledgeChatPage()),
+        GoRoute(path: '/data', builder: (_, __) => const DataPage()),
         GoRoute(path: '/profile', builder: (_, __) => const ProfilePage()),
       ],
+    ),
+    GoRoute(
+      path: '/training/hall',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (_, __) => const TrainingHallPage(),
+    ),
+    GoRoute(
+      path: '/training/parents/:sceneId',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (_, state) => ParentSelectionPage(
+        sceneId: state.pathParameters['sceneId']!,
+      ),
     ),
     GoRoute(
       path: '/training/chat/:customerId',
@@ -70,9 +84,8 @@ class MainShell extends StatelessWidget {
 
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    if (location == '/training') return 1;
-    if (location == '/knowledge') return 2;
-    if (location == '/profile') return 3;
+    if (location == '/data') return 1;
+    if (location == '/profile') return 2;
     return 0;
   }
 
@@ -90,16 +103,26 @@ class MainShell extends StatelessWidget {
           onTap: (i) {
             switch (i) {
               case 0: context.go('/');
-              case 1: context.go('/training');
-              case 2: context.go('/knowledge');
-              case 3: context.go('/profile');
+              case 1: context.go('/data');
+              case 2: context.go('/profile');
             }
           },
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home_outlined), activeIcon: Icon(Icons.home), label: '首页'),
-            BottomNavigationBarItem(icon: Icon(Icons.psychology_outlined), activeIcon: Icon(Icons.psychology), label: '训练'),
-            BottomNavigationBarItem(icon: Icon(Icons.menu_book_outlined), activeIcon: Icon(Icons.menu_book), label: '知识库'),
-            BottomNavigationBarItem(icon: Icon(Icons.person_outline), activeIcon: Icon(Icons.person), label: '我的'),
+          items: [
+            const BottomNavigationBarItem(
+              icon: GamepadTabIcon(isActive: false),
+              activeIcon: GamepadTabIcon(isActive: true),
+              label: '训练',
+            ),
+            const BottomNavigationBarItem(
+              icon: ChartTabIcon(isActive: false),
+              activeIcon: ChartTabIcon(isActive: true),
+              label: '数据',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_outline, color: const Color(0xFF9CA3AF)),
+              activeIcon: Icon(Icons.person, color: const Color(0xFF1E40AF)),
+              label: '我的',
+            ),
           ],
         ),
       ),

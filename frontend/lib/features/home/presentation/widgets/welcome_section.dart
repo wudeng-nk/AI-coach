@@ -1,65 +1,95 @@
 import 'package:flutter/material.dart';
-import 'package:ai_coach/core/theme/app_colors.dart';
-import 'package:ai_coach/shared/widgets/gradient_avatar.dart';
+import 'package:ai_coach/shared/widgets/squirrel_avatar.dart';
 
-class WelcomeSection extends StatelessWidget {
+class WelcomeBanner extends StatelessWidget {
   final String userName;
   final int consecutiveDays;
-  final int todayCompleted;
 
-  const WelcomeSection({
+  const WelcomeBanner({
     super.key,
     required this.userName,
-    this.consecutiveDays = 0,
-    this.todayCompleted = 0,
+    required this.consecutiveDays,
   });
-
-  String get _greeting {
-    final hour = DateTime.now().hour;
-    if (hour >= 5 && hour < 12) return '早上好';
-    if (hour >= 12 && hour < 18) return '下午好';
-    if (hour >= 18 && hour < 22) return '晚上好';
-    return '夜深了';
-  }
-
-  String get _message {
-    if (consecutiveDays >= 7) return '已连续打卡 $consecutiveDays 天，坚持得很棒！';
-    if (todayCompleted == 0) return '今天继续挑战销售场景吧！';
-    return '今天已完成 $todayCompleted 次训练，继续加油！';
-  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.welcomeGradientStart, AppColors.welcomeGradientEnd],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF2196F3), Color(0xFF1976D2)],
         ),
       ),
-      child: Row(
-        children: [
-          GradientAvatar.squirrel(size: 64),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '👋 $_greeting, $userName',
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 50, 16, 32),
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  _message,
-                  style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.5),
+              ],
+            ),
+            child: Row(
+              children: [
+                // 松鼠头像 - 大图标占满白色矩形高度
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: const SquirrelAvatar(size: 110),
+                ),
+                // 文字内容
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '欢迎回来，$userName销冠！',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1A1A1A),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        RichText(
+                          text: const TextSpan(
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF666666),
+                            ),
+                            children: [
+                              TextSpan(text: '本周共情力提升 '),
+                              TextSpan(
+                                text: '12%',
+                                style: TextStyle(
+                                  color: Color(0xFFF1C40F),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

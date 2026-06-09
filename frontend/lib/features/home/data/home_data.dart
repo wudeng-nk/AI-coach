@@ -4,34 +4,27 @@ import 'models/home_models.dart';
 class HomeMockData {
   static HomeData get data => HomeData(
     user: UserData(name: '张顾问', consecutiveDays: 5, todayCompleted: 2),
-    recommendation: RecommendationData(
-      sceneId: 'S-03',
-      sceneName: '异议处理',
-      parentId: 'P-03',
-      parentName: '理性型爸爸',
-      reason: '上次你在价格异议上有进步空间，建议再练习一次',
-      difficulty: 5,
-      estimatedDuration: '3-8 分钟',
-    ),
     weeklyData: WeeklyData(
-      completedCount: 12,
-      completedTrend: 3,
-      averageScore: 82,
-      scoreTrend: 5,
-      passRate: 75,
-      passRateTrend: -5,
+      completedCount: 8,
+      averageScore: 76,
     ),
-    hotScenes: [
-      HotScene(sceneId: 'S-01', sceneName: '破冰', emoji: '🤝', popularity: 95),
-      HotScene(sceneId: 'S-02', sceneName: '需求挖掘', emoji: '🔍', popularity: 88),
-      HotScene(sceneId: 'S-06', sceneName: '签约', emoji: '✍️', popularity: 82),
-      HotScene(sceneId: 'S-03', sceneName: '异议处理', emoji: '💬', popularity: 76),
+    scoreTrend: [
+      ScoreTrendItem(day: '周一', score: 72),
+      ScoreTrendItem(day: '周二', score: 75),
+      ScoreTrendItem(day: '周三', score: 70),
+      ScoreTrendItem(day: '周四', score: 78),
+      ScoreTrendItem(day: '周五', score: 76),
+      ScoreTrendItem(day: '周六', score: 80),
+      ScoreTrendItem(day: '周日', score: 82),
     ],
-    floatingTip: FloatingTipData(
-      message: '今天状态不错！建议挑战「异议处理」场景，上次你在价格异议上有进步空间 💪',
-      hasBadge: true,
-      badgeCount: 1,
-      type: 'suggestion',
-    ),
+    sceneProgress: [
+      SceneProgress(name: '电话邀约', percentage: 0.8),
+      SceneProgress(name: '到店咨询', percentage: 0.6),
+      SceneProgress(name: '价格异议', percentage: 0.4),
+    ],
+    recentTrainings: [
+      RecentTraining(title: '电话邀约-焦虑型', score: 82, timeAgo: '2小时前'),
+      RecentTraining(title: '到店咨询-迷茫型', score: 68, timeAgo: '昨天'),
+    ],
   );
 }

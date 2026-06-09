@@ -5,10 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:ai_coach/core/theme/app_colors.dart';
 import 'package:ai_coach/features/home/presentation/bloc/home_bloc.dart';
 import 'package:ai_coach/features/home/presentation/widgets/welcome_section.dart';
-import 'package:ai_coach/features/home/presentation/widgets/recommend_card.dart';
 import 'package:ai_coach/features/home/presentation/widgets/weekly_data_card.dart';
-import 'package:ai_coach/features/home/presentation/widgets/hot_scenes_card.dart';
-import 'package:ai_coach/features/home/presentation/widgets/floating_tip.dart';
+import 'package:ai_coach/features/home/presentation/widgets/score_trend_card.dart';
+import 'package:ai_coach/features/home/presentation/widgets/scene_progress_card.dart';
+import 'package:ai_coach/features/home/presentation/widgets/recent_training_card.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -31,12 +31,14 @@ class _HomeView extends StatelessWidget {
       builder: (context, state) {
         if (state is HomeLoading) {
           return const Scaffold(
+            backgroundColor: Color(0xFFF5F5F5),
             body: Center(child: CircularProgressIndicator()),
           );
         }
 
         if (state is HomeError) {
           return Scaffold(
+            backgroundColor: const Color(0xFFF5F5F5),
             body: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -58,55 +60,37 @@ class _HomeView extends StatelessWidget {
         if (state is HomeLoaded) {
           final data = state.data;
           return Scaffold(
-            backgroundColor: AppColors.background,
-            body: Stack(
-              children: [
-                RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<HomeBloc>().add(HomeLoadRequested());
-                  },
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    children: [
-                      // 顶部导航栏
-                      _TopNavBar(userName: data.user.name),
-                      // 欢迎区
-                      WelcomeSection(
-                        userName: data.user.name,
-                        consecutiveDays: data.user.consecutiveDays,
-                        todayCompleted: data.user.todayCompleted,
-                      ),
-                      const SizedBox(height: 8),
-                      // 推荐训练卡片
-                      RecommendCard(
-                        recommendation: data.recommendation,
-                        onStart: () {
-                          context.push('/training/chat/${data.recommendation.parentId}');
-                        },
-                      ),
-                      // 本周数据
-                      WeeklyDataCard(
-                        data: data.weeklyData,
-                        onTap: () => context.go('/profile'),
-                      ),
-                      // 热门场景
-                      HotScenesCard(
-                        scenes: data.hotScenes,
-                        onSceneTap: (sceneId) {
-                          context.go('/training');
-                        },
-                      ),
-                      const SizedBox(height: 100), // 底部导航空间 + 浮窗空间
-                    ],
+            backgroundColor: const Color(0xFFF5F5F5),
+            body: RefreshIndicator(
+              onRefresh: () async {
+                context.read<HomeBloc>().add(HomeLoadRequested());
+              },
+              child: ListView(
+                padding: EdgeInsets.zero,
+                children: [
+                  // 蓝色渐变欢迎横幅（含顶部标题栏）
+                  WelcomeBanner(
+                    userName: data.user.name,
+                    consecutiveDays: data.user.consecutiveDays,
                   ),
-                ),
-                // 刘总浮窗
-                FloatingTip(
-                  message: data.floatingTip.message,
-                  hasBadge: data.floatingTip.hasBadge,
-                  badgeCount: data.floatingTip.badgeCount,
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  // 本周数据
+                  WeeklyDataCard(data: data.weeklyData),
+                  const SizedBox(height: 12),
+                  // 得分趋势
+                  ScoreTrendCard(trend: data.scoreTrend),
+                  const SizedBox(height: 12),
+                  // 场景完成度
+                  SceneProgressCard(scenes: data.sceneProgress),
+                  const SizedBox(height: 16),
+                  // 开始训练按钮
+                  _TrainingButton(onTap: () => context.push('/training/hall')),
+                  const SizedBox(height: 12),
+                  // 最近训练
+                  RecentTrainingCard(trainings: data.recentTrainings),
+                  const SizedBox(height: 100),
+                ],
+              ),
             ),
           );
         }
@@ -117,66 +101,54 @@ class _HomeView extends StatelessWidget {
   }
 }
 
-class _TopNavBar extends StatelessWidget {
-  final String userName;
-  const _TopNavBar({required this.userName});
+class _TrainingButton extends StatelessWidget {
+  final VoidCallback onTap;
+  const _TrainingButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: Container(
-        height: 56,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(bottom: BorderSide(color: AppColors.divider)),
-        ),
-        child: Row(
-          children: [
-            // 用户头像
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primaryLightest,
-                border: Border.all(color: AppColors.primary, width: 2),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Ink(
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E40AF), Color(0xFF3B82F6)],
               ),
-              child: Center(
-                child: Text(
-                  userName.isNotEmpty ? userName[0] : '?',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-            ),
-            const Spacer(),
-            // 消息图标
-            Stack(
-              children: [
-                const Icon(Icons.notifications_outlined, size: 24, color: AppColors.textSecondary),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: AppColors.error,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.surface, width: 2),
-                    ),
-                  ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF1E40AF).withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
-            const SizedBox(width: 16),
-            const Icon(Icons.settings_outlined, size: 24, color: AppColors.textSecondary),
-          ],
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('🔥', style: TextStyle(fontSize: 18)),
+                  const SizedBox(width: 8),
+                  const Text(
+                    '开始训练',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward, size: 18, color: Colors.white),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
